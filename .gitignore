@@ -1,2 +1,6 @@
 /app/__pycache__
 /venv
+.venv/
+app/exports/
+app/search_history.json
+flask-*.log

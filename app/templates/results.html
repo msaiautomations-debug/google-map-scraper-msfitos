@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scraped Results - Google Maps Scraper</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <main class="container py-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Scraped Results</h2>
+        <div class="d-flex gap-2">
+          {% if csv_filename %}
+          <a
+            href="{{ url_for('download_csv', filename=csv_filename) }}"
+            class="btn btn-success"
+          >
+            Download CSV
+          </a>
+          {% endif %}
+          <a href="/" class="btn btn-outline-primary">New Search</a>
+        </div>
+      </div>
+
+      {% if skipped > 0 %}
+      <div class="alert alert-warning">
+        {{ skipped }} result(s) were skipped because they were already returned
+        before or could not be read.
+      </div>
+      {% endif %}
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th style="width: 60px">#</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>Phone</th>
+              <th>Website / Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for business in results %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ business.name }}</td>
+              <td>{{ business.address }}</td>
+              <td>{{ business.phone or "-" }}</td>
+              <td>
+                {% if business.details %}
+                <ul class="mb-0 ps-3">
+                  {% for detail in business.details %}
+                  <li>{{ detail }}</li>
+                  {% endfor %}
+                </ul>
+                {% else %}
+                -
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>
