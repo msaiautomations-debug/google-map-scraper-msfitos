@@ -3,72 +3,110 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Scraped Results - Google Maps Scraper</title>
+    <title>Results - LeadSweep</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
-      integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
-      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/app.css') }}"
     />
   </head>
   <body>
-    <main class="container py-4">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">Scraped Results</h2>
-        <div class="d-flex gap-2">
+    <main class="app-shell results-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <span class="brand-mark"><i data-lucide="radar"></i></span>
+          <span>
+            <strong>LeadSweep</strong>
+            <small>{{ results|length }} contacts</small>
+          </span>
+        </a>
+
+        <nav class="top-actions" aria-label="Result actions">
           {% if csv_filename %}
           <a
-            href="{{ url_for('download_csv', filename=csv_filename) }}"
-            class="btn btn-success"
+            class="icon-button success"
+            href="{{ url_for('download_deduped_csv', filename=csv_filename) }}"
+            title="Download CSV"
           >
-            Download CSV
+            <i data-lucide="download"></i>
           </a>
           {% endif %}
-          <a href="/" class="btn btn-outline-primary">New Search</a>
+          <form method="POST" action="/clear-history">
+            <button class="icon-button danger" type="submit" title="Clear history">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </form>
+          <a class="icon-button" href="/" title="New search">
+            <i data-lucide="plus"></i>
+          </a>
+        </nav>
+      </header>
+
+      <section class="results-head">
+        <div>
+          <p class="eyebrow">Scraped results</p>
+          <h1>Business contacts</h1>
         </div>
-      </div>
+        {% if csv_filename %}
+        <a
+          class="download-action"
+          href="{{ url_for('download_deduped_csv', filename=csv_filename) }}"
+        >
+          <i data-lucide="file-down"></i>
+          <span>Download CSV</span>
+        </a>
+        {% endif %}
+      </section>
 
       {% if skipped > 0 %}
-      <div class="alert alert-warning">
-        {{ skipped }} result(s) were skipped because they were already returned
-        before or could not be read.
+      <div class="notice warning">
+        <i data-lucide="triangle-alert"></i>
+        <p>{{ skipped }} result(s) were skipped because they were duplicates or unreadable.</p>
       </div>
       {% endif %}
 
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
-          <thead class="table-dark">
-            <tr>
-              <th style="width: 60px">#</th>
-              <th>Name</th>
-              <th>Address</th>
-              <th>Phone</th>
-              <th>Website / Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for business in results %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td>{{ business.name }}</td>
-              <td>{{ business.address }}</td>
-              <td>{{ business.phone or "-" }}</td>
-              <td>
-                {% if business.details %}
-                <ul class="mb-0 ps-3">
-                  {% for detail in business.details %}
-                  <li>{{ detail }}</li>
-                  {% endfor %}
-                </ul>
-                {% else %}
-                -
-                {% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      {% if results %}
+      <section class="results-grid">
+        {% for business in results %}
+        <article class="result-card">
+          <div class="result-index">{{ loop.index }}</div>
+          <div class="result-body">
+            <h2>{{ business.name }}</h2>
+            <p class="result-line">
+              <i data-lucide="map-pin"></i>
+              <span>{{ business.address }}</span>
+            </p>
+            <p class="result-line">
+              <i data-lucide="phone"></i>
+              <span>{{ business.phone or "-" }}</span>
+            </p>
+            <div class="detail-list">
+              {% if business.details %}
+              {% for detail in business.details %}
+              <span>{{ detail }}</span>
+              {% endfor %}
+              {% else %}
+              <span>No website found</span>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </section>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="database-x"></i>
+        <p>No fetched results are available to show.</p>
       </div>
+      {% endif %}
     </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   </body>
 </html>
